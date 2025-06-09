@@ -14,6 +14,7 @@ namespace game
     public partial class Form1 : Form
     {
         // classes
+        //gay
         public class background
         {
             public Rectangle des;
