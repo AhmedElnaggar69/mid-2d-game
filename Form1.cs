@@ -20,10 +20,7 @@ namespace game
             public Rectangle scr;
             public Bitmap img;
         }
-        public class daway
-        {
-            int x;
-        }
+        
         public class muli_img
         {
             public int x, y;
@@ -41,7 +38,7 @@ namespace game
             public int x, y;
             public int width, height;
         }
-
+       
         //flags
         public bool isrunning = false;
         public bool runn_nd_shot = false;
@@ -230,7 +227,7 @@ namespace game
                 up_shot_frames.Add(img);
             }
         }
-
+        
         public void run_shot()
         {
             string[] path = new string[]

@@ -7,3 +7,12 @@ C:\Users\charmask\source\repos\game\game\obj\Debug\game.csproj.GenerateResource.
 C:\Users\charmask\source\repos\game\game\obj\Debug\game.csproj.CoreCompileInputs.cache
 C:\Users\charmask\source\repos\game\game\obj\Debug\game.exe
 C:\Users\charmask\source\repos\game\game\obj\Debug\game.pdb
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\bin\Debug\game.exe.config
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\bin\Debug\game.exe
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\bin\Debug\game.pdb
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.csproj.AssemblyReference.cache
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.Properties.Resources.resources
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.csproj.GenerateResource.cache
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.csproj.CoreCompileInputs.cache
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.exe
+X:\colleage_stuff_x\semester_2\multi-game\gamemain\obj\Debug\game.pdb
