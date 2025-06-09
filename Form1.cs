@@ -146,18 +146,23 @@ namespace game
             else if (runn_nd_shot)
             {
                 playerobj.frames = run_shot_frames;
-                if (layers[2].des.X <= 0)
+                if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
                 {
-                    layers[1].scr.X = 0;
-                    layers[2].des.X = this.ClientSize.Width;
-                    layers[5].scr.X = 0;
-                    layers[6].des.X = this.ClientSize.Width;
+                    layers[1].des.X = 0;
+                    layers[2].des.X = this.ClientSize.Width - 5;
+                    layers[3].des.X = 0 - this.ClientSize.Width + 5;
+                    layers[6].des.X = 0;
+                    layers[7].des.X = this.ClientSize.Width - 5;
+                    layers[8].des.X = 0 - this.ClientSize.Width + 5;
                 }
-
-                layers[1].scr.X++;
-                layers[5].scr.X++;
-                layers[2].des.X -= 5;
-                layers[6].des.X -= 5;
+                //mountian mov
+                layers[1].des.X -= 20;
+                layers[2].des.X -= 20;
+                layers[3].des.X -= 20;
+                //grass move
+                layers[6].des.X -= 20;
+                layers[7].des.X -= 20;
+                layers[8].des.X -= 20;
                 playerobj.frame_index++;
                 if (playerobj.frame_index >= run_shot_frames.Count)
                 {
