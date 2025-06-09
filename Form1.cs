@@ -94,18 +94,7 @@ namespace game
             {
                 playerobj.frames = run_frames;
              
-                if (layers[2].des.X <= 0)
-                {
-                    layers[1].scr.X = 0;
-                    layers[2].des.X = this.ClientSize.Width;
-                    layers[5].scr.X = 0;
-                    layers[6].des.X = this.ClientSize.Width;
-                }
-
-                layers[1].scr.X++;  
-                layers[5].scr.X++;
-                layers[2].des.X -= 5;
-                layers[6].des.X -= 5;
+                
                 playerobj.frame_index++;
                 if (playerobj.frame_index >= run_frames.Count)
                 {
@@ -113,11 +102,45 @@ namespace game
                 }
                 if (isRunningBackward)
                 {
-                    playerobj.x -= 20;  
+                    playerobj.x -= 20;
+                    if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
+                    {
+                        layers[1].des.X = 0;
+                        layers[2].des.X = this.ClientSize.Width - 5;
+                        layers[3].des.X = 0 - this.ClientSize.Width + 5;
+                        layers[6].des.X = 0;
+                        layers[7].des.X = this.ClientSize.Width-5;
+                        layers[8].des.X = 0 - this.ClientSize.Width + 5;
+                    }
+                    //mountian mov
+                    layers[1].des.X += 20;
+                    layers[2].des.X += 20;
+                    layers[3].des.X += 20;
+                    //grass move
+                    layers[6].des.X += 20;
+                    layers[7].des.X += 20;
+                    layers[8].des.X += 20;
                 }
                 else
                 {
-                    playerobj.x += 20;  
+                    playerobj.x += 20;
+                    if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
+                    {
+                        layers[1].des.X = 0;
+                        layers[2].des.X = this.ClientSize.Width-5;
+                        layers[3].des.X = 0-this.ClientSize.Width+5;
+                        layers[6].des.X = 0;
+                        layers[7].des.X = this.ClientSize.Width-5;
+                        layers[8].des.X = 0 - this.ClientSize.Width + 5;
+                    }
+                    //mountian mov
+                    layers[1].des.X -= 20;
+                    layers[2].des.X -= 20;
+                    layers[3].des.X -= 20;
+                    //grass move
+                    layers[6].des.X -= 20;
+                    layers[7].des.X -= 20;
+                    layers[8].des.X -= 20;
                 }
             }
             else if (runn_nd_shot)
@@ -263,16 +286,27 @@ namespace game
             int w = this.ClientSize.Width;
             int h = this.ClientSize.Height;
             Rectangle fullScreen = new Rectangle(0, 0, w, h);
-
+            //0
             layers.Add(new background { img = scene, des = fullScreen, scr = new Rectangle(0, 0, scene.Width, scene.Height) });
+            //1
             layers.Add(new background { img = mountains, des = fullScreen, scr = new Rectangle(0, 0, mountains.Width, mountains.Height) });
-            layers.Add(new background { img = mountains, des = new Rectangle(this.ClientSize.Width, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, mountains.Width, mountains.Height) });
+            //2 mount right
+            layers.Add(new background { img = mountains, des = new Rectangle(this.ClientSize.Width-5, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, mountains.Width, mountains.Height) });
+            //3 mount left
+            layers.Add(new background { img = mountains, des = new Rectangle(0-this.ClientSize.Width+5, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, mountains.Width, mountains.Height) });
+            //4
             layers.Add(new background { img = trees, des = fullScreen, scr = new Rectangle(0, 0, trees.Width, trees.Height) });
+            //5
             layers.Add(new background { img = mountain, des = fullScreen, scr = new Rectangle(0, 0, mountain.Width, mountain.Height) });
+            //6
             layers.Add(new background { img = grass, des = fullScreen, scr = new Rectangle(0, 0, grass.Width, grass.Height) });
-            layers.Add(new background { img = grass, des = new Rectangle(this.ClientSize.Width, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, grass.Width, grass.Height) });
+            //7 grass right
+            layers.Add(new background { img = grass, des = new Rectangle(this.ClientSize.Width-5, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, grass.Width, grass.Height) });
+            //8 grass left
+            layers.Add(new background { img = grass, des = new Rectangle(0-this.ClientSize.Width+5, 0, this.ClientSize.Width, this.ClientSize.Height), scr = new Rectangle(0, 0, grass.Width, grass.Height) });
 
-            
+
+
             ground = new Bitmap("ground.png");
             int groundWidth = 130;
             int groundY = this.ClientSize.Height - 52;
