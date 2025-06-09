@@ -14,13 +14,16 @@ namespace game
     public partial class Form1 : Form
     {
         // classes
-        //gay
         public class background
         {
             public Rectangle des;
             public Rectangle scr;
             public Bitmap img;
 
+        }
+        public class daway
+        {
+            int x;
         }
         public class muli_img
         {
