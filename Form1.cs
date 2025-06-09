@@ -45,6 +45,8 @@ namespace game
         public bool isRunningBackward = false;
         public bool multi_shot_fired = false;
         public bool single_shot_fired = false;
+        public bool jump = false;
+
 
         // Track if single shot key is currently held to avoid rapid-fire on holding
         private bool singleShotKeyDown = false;
@@ -59,6 +61,7 @@ namespace game
         public List<bullet> multi_bullets = new List<bullet>();
         public List<Bitmap> up_shot_frames = new List<Bitmap>();
         public List<bullet> single_bullets = new List<bullet>();
+        public List<Bitmap> jump_frames = new List<Bitmap>();
 
         //boring
         Timer tt = new Timer();
@@ -177,13 +180,46 @@ namespace game
             {
                 playerobj.frames = up_shot_frames; 
             }
+            else if(jump)
+            {
+                playerobj.frames = jump_frames;
+
+                if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
+                {
+                    layers[1].des.X = 0;
+                    layers[2].des.X = this.ClientSize.Width - 5;
+                    layers[3].des.X = 0 - this.ClientSize.Width + 5;
+                    layers[6].des.X = 0;
+                    layers[7].des.X = this.ClientSize.Width - 5;
+                    layers[8].des.X = 0 - this.ClientSize.Width + 5;
+                }
+                //mountian mov
+                layers[1].des.X -= 20;
+                layers[2].des.X -= 20;
+                layers[3].des.X -= 20;
+                //grass move
+                layers[6].des.X -= 20;
+                layers[7].des.X -= 20;
+                layers[8].des.X -= 20;
+
+                playerobj.frame_index++;
+                if (playerobj.frame_index >= jump_frames.Count)
+                {
+                    playerobj.frame_index = 0;
+                    jump = false;
+                }
+                else
+                {
+                    playerobj.x += 50;
+                }
+            }
             else
             {
                 playerobj.frames = idle_frames;
                 playerobj.frame_index++;
                 if (playerobj.frame_index >= idle_frames.Count)
                 {
-                    playerobj.frame_index = 0;  
+                    playerobj.frame_index = 0;
                 }
             }
 
@@ -239,6 +275,7 @@ namespace game
             player();
             run_shot();
             shot_up();
+            jumping_frames();
         }
 
         public void shot_up()
@@ -378,6 +415,26 @@ namespace game
                 run_frames.Add(img);
             }
         }
+        public void jumping_frames()
+        {
+            string[] path = new string[]
+            {
+                "player-jump/player-jump-1.png",
+                "player-jump/player-jump-2.png",
+                "player-jump/player-jump-3.png",
+                "player-jump/player-jump-4.png",
+                "player-jump/player-jump-5.png",
+                "player-jump/player-jump-6.png",
+                
+            };
+
+            for (int j = 0; j < path.Length; j++)
+            {
+                Bitmap img = new Bitmap(path[j]);
+                img.MakeTransparent(img.GetPixel(0, 0));
+               jump_frames.Add(img);
+            }
+        }
 
         public void press(object sender, KeyEventArgs e)
         {
@@ -414,6 +471,16 @@ namespace game
                     single_shot_fired = true;
                     playerobj.frame_index = 0;
                     singleShotKeyDown = true;  
+                }
+            }
+
+            if (e.KeyCode == Keys.J)
+            {
+                if (!jump)
+                {
+                    jump = true;
+                    playerobj.frame_index = 0;
+                   
                 }
             }
         }
