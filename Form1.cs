@@ -86,14 +86,15 @@ namespace game
         
         public List<Bitmap>dumbguy_idle = new List<Bitmap>();
         public List<Bitmap> dumbguy_walk = new List<Bitmap>();
-        public muli_img dumbguy_obj = new muli_img();
-        public muli_img dumbguy_obj2 = new muli_img();
-        public muli_img dumbguy_obj3 = new muli_img();
-        public muli_img dumbguy_obj4= new muli_img();
-        public muli_img dumbguy_obj5 = new muli_img();
-        public muli_img dumbguy_obj6 = new muli_img();
+        public List<one_img>walkable = new List<one_img>();
         public List<muli_img> dumbguys = new List<muli_img>();
+
         public List<bullet> dumb_guy_bullets = new List<bullet>();
+
+        public List<muli_img> elevs = new List<muli_img>();
+        public List<Bitmap> elev_frames = new List<Bitmap>();
+
+
         //boring
         Timer tt = new Timer();
         Bitmap off;
@@ -110,8 +111,13 @@ namespace game
         int ct = 0;
         int dumbguy_health = 5;
         int player_health = 10;
-
-
+        int laserhits = 0;
+        int laserhits2 = 0;
+        int laserhits3 = 0;
+        int incremtal_for = 0;
+        int incremtal_back = 0;
+        int xlaser = 0;
+        int ylaser = 0;
         // scrolling / cam tracking
         public Form1()
         {
@@ -158,10 +164,31 @@ namespace game
                     layers[6].des.X += 20;
                     layers[7].des.X += 20;
                     layers[8].des.X += 20;
+                    foreach (one_img i in groundlist)
+                    {
+                        i.x += 20;
+                       
+                    }
+                    incremtal_for += 20;
+                    foreach (one_img i in platforms)
+                    {
+                        i.x += 20;
+                        
+                    }
+
+                   foreach(bullet i in laser_beams)
+                    {
+                        i.x += 20;
+                    }
+
+                    foreach (muli_img i in elevs)
+                    {
+                        i.x += 20;
+                    }
                 }
                 else
                 {
-                    playerobj.x += 20;
+                    //playerobj.x += 20;
                     if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
                     {
                         layers[1].des.X = 0;
@@ -179,6 +206,28 @@ namespace game
                     layers[6].des.X -= 20;
                     layers[7].des.X -= 20;
                     layers[8].des.X -= 20;
+                    foreach (one_img i in groundlist)
+                    {
+                            i.x -= 20;
+                           
+                    }
+                    incremtal_back += 20;
+
+                    foreach (one_img i in platforms)
+                    {
+                            i.x -= 20;
+                            
+
+                    }
+                    foreach (bullet i in laser_beams)
+                    {
+                        i.x -= 20;
+                    }
+                    foreach (muli_img i in elevs)
+                    {
+                        i.x -= 20;
+                    }
+
                 }
             }
             else if (runn_nd_shot)
@@ -438,7 +487,19 @@ namespace game
             }
 
 
+        } public void elevator_mov()
+        {
+            int playerLeft = playerobj.x + 105;
+            int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
+
+            if(playerLeft > elevs[0].x && playerRight < elevs[0].x + elevs[0].frames[elevs[0].frame_index].Width+50)
+            {
+                //MessageBox.Show("work");
+                elevs[0].y -= 20;
+                playerobj.y -= 20;
+            }
         }
+
         public void update(object sender, EventArgs e)
         {
             actor_related();
@@ -446,6 +507,10 @@ namespace game
 
             player_in_da_hole();
 
+            elevator_mov();
+            int bi = elevs[0].x + elevs[0].frames[elevs[0].frame_index].Width;
+            int bix = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
+            this.Text = "" + elevs[0].x + "/" + (playerobj.x + 105) + "/" + bix + "/" + bi;
 
             if (onplatform)
             {
@@ -453,72 +518,103 @@ namespace game
             }
             if (dead && playerdeadframes.Count > 0)
             {
-                if (ct % 6 == 0) 
+                if (ct % 6 == 0)
                 {
                     playerobj.frame_index++;
                     if (playerobj.frame_index >= playerdeadframes.Count)
                     {
-                        playerobj.frame_index = playerdeadframes.Count - 1; 
+                        playerobj.frame_index = playerdeadframes.Count - 1;
                     }
                 }
             }
 
-
-                for(int i=0; i < laser_beams.Count; i++)
+            /*
+            for(int i=0; i < laser_beams.Count; i++)
+            {
+                int playerLeft = playerobj.x-100;
+                int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width+100;
+                bullet pnn =laser_beams[i];
+                if (laser_range)
                 {
-                    bullet pnn =laser_beams[i];
-                    if (i == 0 &&laser_range)
+                    //MessageBox.Show("yea");
+                    if (laser_beams[i].x > playerRight && (laser_beams[i].x + laser_beams[i].width) < playerLeft)
                     {
                         playerobj.heath -= 5;
-
+                        //MessageBox.Show("yea");
                     }
+                   
 
                 }
-            
+
+            }
+            */
+            for (int i = 0; i < laser_beams.Count; i++)
+            {
+                int playerLeft = playerobj.x + 105;
+                int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
+                //1775 2075 2375
+                if (laser_range)
+                {
+                    if (playerRight > 1775 + xlaser && playerLeft < 1775 + xlaser || playerRight > 2075 + xlaser && playerLeft < 2075 + xlaser || playerRight > 2375 + xlaser && playerLeft < 2375 + xlaser)
+                    {
+                        //MessageBox.Show("bababoy");
+                        playerobj.heath -= 5;
+                    }
+                }
+
+                //this.Text += "/" + playerLeft + "/" + "/" + playerRight + "/";
+                //this.Text = ""+playerobj.heath+"";
+
+            }
 
             if (ct % 5 == 0)
             {
-                
-                    bullet pnn = new bullet();
-                    pnn.x = platforms[0].x - 85;
-                    pnn.y = 0;
-                    pnn.width = 10;
-                    pnn.height = this.ClientSize.Height;
-                    laser_beams.Add(pnn);
-                    
-                
-                    bullet pnn2 = new bullet();
-                    pnn2.x = platforms[1].x - 85;
-                    pnn2.y = 0;
-                    pnn2.width = 10;
-                    pnn2.height = this.ClientSize.Height;
-                    laser_beams.Add(pnn2);
 
-               
-                    bullet pnn3 = new bullet();
-                    pnn3.x = platforms[2].x - 85;
-                    pnn3.y = 0;
-                    pnn3.width = 10;
-                    pnn3.height = this.ClientSize.Height;
-                    laser_beams.Add(pnn3);
+                bullet pnn = new bullet();
+                pnn.x = platforms[0].x - 85;
+                pnn.y = 0;
+                pnn.width = 10;
+                pnn.height = this.ClientSize.Height;
+                laser_beams.Add(pnn);
+                //this.Text = "" + pnn.x + "/";
 
-                
+                bullet pnn2 = new bullet();
+                pnn2.x = platforms[1].x - 85;
+                pnn2.y = 0;
+                pnn2.width = 10;
+                pnn2.height = this.ClientSize.Height;
+                laser_beams.Add(pnn2);
+                //this.Text += "" + pnn2.x + "/";
+
+                bullet pnn3 = new bullet();
+                pnn3.x = platforms[2].x - 85;
+                pnn3.y = 0;
+                pnn3.width = 10;
+                pnn3.height = this.ClientSize.Height;
+                laser_beams.Add(pnn3);
+                //this.Text += "" + pnn3.x + "";
+
 
             }
 
             if (ct % 2 == 0)
             {
-                if (laser_beams.Count>=3)
+                if (laser_beams.Count >= 3)
                 {
                     laser_beams.Remove(laser_beams[0]);
                     laser_beams.Remove(laser_beams[1]);
-                  
+
 
                 }
 
             }
 
-           
+            elevs[0].frame_index++;
+            if (elevs[0].frame_index >= elevs.Count)
+            {
+                elevs[0].frame_index = 0;
+            }
+
 
             drawdubb(this.CreateGraphics());
             ct++;
@@ -577,7 +673,7 @@ namespace game
             run_shot();
             shot_up();
             jumping_frames();
-
+            load_ele();
 
             // music 
             
@@ -602,6 +698,47 @@ namespace game
 
             loaddumbguy();
         }
+
+        public void load_ele()
+        {
+            ele_frames();
+
+
+            elevs.Clear();
+         muli_img pnn = new muli_img
+                {
+                    heath = 5,
+                    x = 3000,
+                    y = 900,
+                    w = 100,
+                    h = 70,
+                    frame_index = 0,
+                    frames = elev_frames
+                };
+              
+                elevs.Add(pnn);
+            
+        }
+        public void ele_frames()
+        {
+            string[] path = new string[]
+                {
+                "jumper-idle/jumper-idle-1.png",
+                "jumper-idle/jumper-idle-2.png",
+                "jumper-idle/jumper-idle-3.png",
+               "jumper-idle/jumper-idle-4.png",
+
+                };
+            elev_frames.Clear();
+            for (int j = 0; j < path.Length; j++)
+            {
+                Bitmap img = new Bitmap(path[j]);
+                img.MakeTransparent(img.GetPixel(0, 0));
+                elev_frames.Add(img);
+            }
+        }
+
+
         public void loaddumbguy()
         {
             dumbguyidle();
@@ -774,6 +911,8 @@ namespace game
             ground_obj_platform3.x = this.ClientSize.Width - 100;
             ground_obj_platform3.y = groundY;
             platforms.Add(ground_obj_platform3);
+
+            
 
 
         }
@@ -987,6 +1126,8 @@ namespace game
                     new Rectangle(dumbguy.x, dumbguy.y, dumbguy.w, dumbguy.h));
             }
 
+         
+
             foreach (one_img i in groundlist)
             {
                 g.DrawImage(i.img, new Rectangle(i.x, i.y, 200, 20));
@@ -1036,6 +1177,12 @@ namespace game
             {
                 g.FillRectangle(Brushes.Green, 10, 10, playerobj.heath * 4, 20); 
                 g.DrawString($"health: {playerobj.heath}", new Font("Fantasy", 12), Brushes.White, 10, 30);
+            }
+
+            foreach (var pnn in elevs)
+            {
+                g.DrawImage(pnn.frames[pnn.frame_index],
+                    new Rectangle(pnn.x, pnn.y, pnn.w, pnn.h));
             }
         }
 
