@@ -34,6 +34,7 @@ namespace game
             public float scale = 1.0f;
             public int heath  ;
             public float lastShotTime = 0;
+            public float lastLaserDamageTime = 0;
         }
 
         public class one_img
@@ -59,8 +60,12 @@ namespace game
         public bool dumb_guy_go_left = false;
         public bool dumb_guy_go_right = false;
         public bool dead = false;
-        // Track if single shot key is currently held to avoid rapid-fire on holding
         private bool singleShotKeyDown = false;
+        bool onplatform = true;
+        bool laser_range = false;
+        bool laser_for_0 = true;
+        bool laser_for_1 = true;
+        bool laser_for_2 = true;
 
         //lists and objects
         public List<background> layers = new List<background>();
@@ -68,12 +73,15 @@ namespace game
         public List<Bitmap> idle_frames = new List<Bitmap>();
         public List<Bitmap> run_frames = new List<Bitmap>();
         public List<one_img> groundlist = new List<one_img>();
+        public List<one_img> platforms = new List<one_img>();
+
         public List<Bitmap> run_shot_frames = new List<Bitmap>();
         public List<bullet> multi_bullets = new List<bullet>();
         public List<Bitmap> up_shot_frames = new List<Bitmap>();
         public List<bullet> single_bullets = new List<bullet>();
         public List<Bitmap> playerdeadframes = new List<Bitmap>();
         public List<Bitmap> jump_frames = new List<Bitmap>();
+        public List<bullet> laser_beams = new List<bullet>();
 
         
         public List<Bitmap>dumbguy_idle = new List<Bitmap>();
@@ -435,6 +443,14 @@ namespace game
         {
             actor_related();
             dumbguy_related();
+
+            player_in_da_hole();
+
+
+            if (onplatform)
+            {
+                laser_range = false;
+            }
             if (dead && playerdeadframes.Count > 0)
             {
                 if (ct % 6 == 0) 
@@ -446,8 +462,112 @@ namespace game
                     }
                 }
             }
+
+
+                for(int i=0; i < laser_beams.Count; i++)
+                {
+                    bullet pnn =laser_beams[i];
+                    if (i == 0 &&laser_range)
+                    {
+                        playerobj.heath -= 5;
+
+                    }
+
+                }
+            
+
+            if (ct % 5 == 0)
+            {
+                
+                    bullet pnn = new bullet();
+                    pnn.x = platforms[0].x - 85;
+                    pnn.y = 0;
+                    pnn.width = 10;
+                    pnn.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn);
+                    
+                
+                    bullet pnn2 = new bullet();
+                    pnn2.x = platforms[1].x - 85;
+                    pnn2.y = 0;
+                    pnn2.width = 10;
+                    pnn2.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn2);
+
+               
+                    bullet pnn3 = new bullet();
+                    pnn3.x = platforms[2].x - 85;
+                    pnn3.y = 0;
+                    pnn3.width = 10;
+                    pnn3.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn3);
+
+                
+
+            }
+
+            if (ct % 2 == 0)
+            {
+                if (laser_beams.Count>=3)
+                {
+                    laser_beams.Remove(laser_beams[0]);
+                    laser_beams.Remove(laser_beams[1]);
+                  
+
+                }
+
+            }
+
+           
+
             drawdubb(this.CreateGraphics());
             ct++;
+        }
+        public void player_in_da_hole()
+        {
+            int playerLeft = playerobj.x;
+            int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width;
+           if (playerRight < platforms[0].x - 90 && playerobj.x > groundlist[groundlist.Count - 1].x && !jump)
+            {
+                onplatform = false;
+            }
+            if (playerRight < platforms[0].x - 90 && playerobj.x > groundlist[groundlist.Count - 1].x )
+            {
+                laser_range = true;
+
+            }
+
+
+            if (playerRight < platforms[1].x - 90 && playerobj.x > platforms[0].x && !jump)
+            {
+                onplatform = false;
+            }
+
+            if (playerRight < platforms[1].x - 90 && playerobj.x > platforms[0].x )
+            {
+                laser_range = true;
+
+
+            }
+
+
+
+            if (playerRight < platforms[2].x - 90 && playerobj.x > platforms[1].x && !jump)
+            {
+                onplatform = false;
+            }
+
+            if (playerRight < platforms[2].x - 90 && playerobj.x > platforms[1].x )
+            {
+                laser_range = true;
+            }
+
+
+            if (!onplatform)
+            {
+                playerobj.y += 12;
+            }
+
         }
         public void loading(object sender, EventArgs e)
         {
@@ -461,21 +581,24 @@ namespace game
 
             // music 
             
-            waveOutDevice = new WaveOutEvent();
-            string musicPath = System.IO.Path.Combine(Application.StartupPath, "Song.mp3"); 
+            //waveOutDevice = new WaveOutEvent();
+            //string musicPath = System.IO.Path.Combine(Application.StartupPath, "Song.mp3"); 
           
-            audioFileReader = new AudioFileReader(musicPath);
+            //audioFileReader = new AudioFileReader(musicPath);
          
-            waveOutDevice.Init(audioFileReader);
-            waveOutDevice.PlaybackStopped += (s, ev) =>
-            {
-                audioFileReader.Position = 0; 
-                waveOutDevice.Play();
-            };
-            waveOutDevice.Play();
+            //waveOutDevice.Init(audioFileReader);
+           // waveOutDevice.PlaybackStopped += (s, ev) =>
+            //{
+            //    audioFileReader.Position = 0; 
+            //    waveOutDevice.Play();
+            //};
+            //waveOutDevice.Play();
 
 
             // dumbguy
+
+
+     
 
             loaddumbguy();
         }
@@ -621,14 +744,38 @@ namespace game
             int groundWidth = 130;
             int groundY = this.ClientSize.Height - 52;
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i <= 7; i++)
             {
-                one_img ground_obj = new one_img();
-                ground_obj.img = ground;
-                ground_obj.x = i * groundWidth;
-                ground_obj.y = groundY;
-                groundlist.Add(ground_obj);
+                    one_img ground_obj = new one_img();
+                    ground_obj.img = ground;
+                    ground_obj.x = i * groundWidth;
+                    ground_obj.y = groundY;
+                    groundlist.Add(ground_obj);
+
+                
             }
+            // platform
+            one_img ground_obj_platform = new one_img();
+            ground_obj_platform.img = ground;
+            ground_obj_platform.x = this.ClientSize.Width - 700;
+            ground_obj_platform.y = groundY;
+            platforms.Add(ground_obj_platform);
+
+
+            one_img ground_obj_platform2 = new one_img();
+            ground_obj_platform2.img = ground;
+            ground_obj_platform2.x = this.ClientSize.Width - 400;
+            ground_obj_platform2.y = groundY;
+            platforms.Add(ground_obj_platform2);
+
+
+            one_img ground_obj_platform3 = new one_img();
+            ground_obj_platform3.img = ground;
+            ground_obj_platform3.x = this.ClientSize.Width - 100;
+            ground_obj_platform3.y = groundY;
+            platforms.Add(ground_obj_platform3);
+
+
         }
 
         public void player()
@@ -844,6 +991,10 @@ namespace game
             {
                 g.DrawImage(i.img, new Rectangle(i.x, i.y, 200, 20));
             }
+            foreach (one_img i in platforms)
+            {
+                g.DrawImage(i.img, new Rectangle(i.x, i.y, 200, 20));
+            }
 
             foreach (bullet i in multi_bullets)
             {
@@ -851,6 +1002,15 @@ namespace game
                 {
                     g.DrawEllipse(p, i.x, i.y, i.width, i.height);
                     g.FillEllipse(Brushes.Red, i.x, i.y, i.width, i.height);
+                }
+            }
+
+            foreach (bullet i in laser_beams)
+            {
+                using (Pen p = new Pen(color: Color.LightBlue))
+                {
+                    g.DrawRectangle(p, i.x, i.y, i.width, i.height);
+                    g.FillRectangle(Brushes.LightBlue, i.x, i.y, i.width, i.height);
                 }
             }
 
