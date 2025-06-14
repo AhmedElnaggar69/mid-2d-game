@@ -1,5 +1,6 @@
 ﻿
 
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,6 +14,7 @@ using System.Windows.Forms;
 using System.Media;
 
 using NAudio.Wave;
+using NAudio.Utils;
 namespace game
 {
     public partial class Form1 : Form
@@ -75,17 +77,21 @@ namespace game
         bool laser3exist = false;
         bool goup = false;
         bool godown = false;
-        bool elv_range=false;
+        bool elv_range = false;
         bool is_paused = false;
         bool velho_go_right = false;
         bool velho_go_left = false;
-        bool onLevel2 = false;
+        bool onlevel2 = false;
         bool most_hitleft = false;
         bool most_hitright = false;
+        bool most_hitleft1 = false;
+        bool most_hitright1 = false;
         bool multi_shot_fired_rev = false;
-        bool runn_nd_shot_rev =false;
+        bool runn_nd_shot_rev = false;
         int dur = 10;
-
+        bool elevator_locked = false;
+        bool down_yougo = false;
+        bool up_u_go = false;
         //lists and objects
         public List<background> layers = new List<background>();
         public muli_img playerobj = new muli_img();
@@ -104,7 +110,7 @@ namespace game
         public List<Bitmap> playerdeadframes = new List<Bitmap>();
         public List<Bitmap> jump_frames = new List<Bitmap>();
         public List<bullet> laser_beams = new List<bullet>();
-        public List<Bitmap>velho_going_left = new List<Bitmap>();
+        public List<Bitmap> velho_going_left = new List<Bitmap>();
         public List<Bitmap> velho_going_right = new List<Bitmap>();
         public List<Bitmap> player_shot_left_frames = new List<Bitmap>();
 
@@ -123,6 +129,7 @@ namespace game
         public List<muli_img> elevatorthe = new List<muli_img>();
         //elevator platforms
         public List<one_img> elevatorplatlist = new List<one_img>();
+        public List<one_img> ladderlist = new List<one_img>();
 
         //boring
         Timer tt = new Timer();
@@ -144,9 +151,11 @@ namespace game
         int ylaser = 0;
         int toggle = 0;
         int most_iter = 0;
-        int pause_ct = 0; 
-   
-        int durr = 60; 
+        int pause_ct = 0;
+        int playershotrev = 0;
+        int playershotrevdown = 0;
+
+        int durr = 30;
 
         // scrolling / cam tracking
         public Form1()
@@ -162,8 +171,8 @@ namespace game
         }
         public void velhorelated()
         {
-            
-            if (onLevel2)
+
+            if (onlevel2)
             {
                 if (!velho_go_right && !velho_go_left)
                 {
@@ -186,15 +195,24 @@ namespace game
                 {
                     velhoobj.frame_index = 0;
                 }
+                if(velhoobj.x < 1000)
+                {
+                    velho_go_right = true;
+                }
 
+                if (velhoobj.x > 1650)
+                {
+                    velho_go_left = true;
+                    velho_go_right = false;
+                }
                 float dist_yo_player = velhoobj.x - (playerobj.x + playerobj.w / 2);
-                
-                if (dist_yo_player < -300)
+
+                if (dist_yo_player < -400)
                 {
                     velho_go_right = true;
                     velho_go_left = false;
                 }
-                else if (dist_yo_player > 300)
+                else if (dist_yo_player > 400)
                 {
                     velho_go_left = true;
                     velho_go_right = false;
@@ -202,7 +220,7 @@ namespace game
 
                 Rectangle playerLeftRect = new Rectangle(playerobj.x, playerobj.y, 50, playerobj.h);
                 Rectangle velhoLeftRect = new Rectangle(velhoobj.x, velhoobj.y, 50, velhoobj.h);
-                
+
                 Rectangle playerRightRect = new Rectangle(playerobj.x + playerobj.w - 50, playerobj.y, 50, playerobj.h);
                 Rectangle velhoRightRect = new Rectangle(velhoobj.x + velhoobj.w - 50, velhoobj.y, 50, velhoobj.h);
 
@@ -211,6 +229,44 @@ namespace game
                 if (most_hitleft || most_hitright)
                 {
                     playerobj.heath -= 5;
+                }
+                for (int i = multi_bullets.Count - 1; i > 0; i--)
+                {
+                    bullet thebullet = multi_bullets[i];
+
+                    Rectangle playerLeftRect1 = new Rectangle(thebullet.x, thebullet.y, 50, thebullet.height);
+                    Rectangle velhoLeftRect1 = new Rectangle(velhoobj.x, velhoobj.y, 50, velhoobj.h);
+
+                    Rectangle playerRightRect1 = new Rectangle(thebullet.x + thebullet.width - 50, thebullet.y, 50, thebullet.height);
+                    Rectangle velhoRightRect1 = new Rectangle(velhoobj.x + velhoobj.w - 50, velhoobj.y, 50, velhoobj.h);
+
+                    most_hitleft1 = playerLeftRect1.IntersectsWith(velhoLeftRect1);
+                    most_hitright1 = playerRightRect1.IntersectsWith(velhoRightRect1);
+                    if (most_hitleft1 || most_hitright1)
+                    {
+                        velhoobj.heath -= 5;
+                        multi_bullets.Remove(thebullet);
+                    }
+
+                }
+                for (int i = multi_bullets_rev.Count - 1; i > 0; i--)
+                {
+                    bullet thebullet = multi_bullets_rev[i];
+
+                    Rectangle playerLeftRect1 = new Rectangle(thebullet.x, thebullet.y, 50, thebullet.height);
+                    Rectangle velhoLeftRect1 = new Rectangle(velhoobj.x, velhoobj.y, 50, velhoobj.h);
+
+                    Rectangle playerRightRect1 = new Rectangle(thebullet.x + thebullet.width - 50, thebullet.y, 50, thebullet.height);
+                    Rectangle velhoRightRect1 = new Rectangle(velhoobj.x + velhoobj.w - 50, velhoobj.y, 50, velhoobj.h);
+
+                    most_hitleft1 = playerLeftRect1.IntersectsWith(velhoLeftRect1);
+                    most_hitright1 = playerRightRect1.IntersectsWith(velhoRightRect1);
+                    if (most_hitleft1 || most_hitright1)
+                    {
+                        velhoobj.heath -= 5;
+                        multi_bullets_rev.Remove(thebullet);
+                    }
+
                 }
             }
             else
@@ -221,12 +277,20 @@ namespace game
         }
         public void actor_related()
         {
+            if (elevator_locked)
+            {
+                playerobj.frames = idle_frames;
+                playerobj.frame_index++;
+                if (playerobj.frame_index >= idle_frames.Count)
+                {
+                    playerobj.frame_index = 0;
+                }
+                return; 
+            }
 
-            if (isrunning && !runn_nd_shot && !single_shot_fired)
+            if (isrunning && !runn_nd_shot && !runn_nd_shot_rev && !single_shot_fired && !jump)
             {
                 playerobj.frames = run_frames;
-
-
                 playerobj.frame_index++;
                 if (playerobj.frame_index >= run_frames.Count)
                 {
@@ -244,18 +308,17 @@ namespace game
                         layers[7].des.X = this.ClientSize.Width - 5;
                         layers[8].des.X = 0 - this.ClientSize.Width + 5;
                     }
-                    //mountian mov
+                    // Mountain move
                     layers[1].des.X += 20;
                     layers[2].des.X += 20;
                     layers[3].des.X += 20;
-                    //grass move
+                    // Grass move
                     layers[6].des.X += 20;
                     layers[7].des.X += 20;
                     layers[8].des.X += 20;
                     for (int i = 0; i < platforms.Count; i++)
                     {
                         platforms[i].x += 20;
-                       
                     }
                     for (int i = 0; i < groundlist.Count; i++)
                     {
@@ -273,12 +336,16 @@ namespace game
                     {
                         elevatorplatlist[i].x += 20;
                     }
+                    for (int i = 0; i < ladderlist.Count; i++)
+                    {
+                        ladderlist[i].x += 20;
+                    }
                     velhoobj.x += 20;
                     xlaser += 20;
                 }
                 else
                 {
-                    playerobj.x += 20;
+                    playerobj.x += 10;
                     if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
                     {
                         layers[1].des.X = 0;
@@ -288,11 +355,11 @@ namespace game
                         layers[7].des.X = this.ClientSize.Width - 5;
                         layers[8].des.X = 0 - this.ClientSize.Width + 5;
                     }
-                    //mountian mov
+                    // Mountain move
                     layers[1].des.X -= 20;
                     layers[2].des.X -= 20;
                     layers[3].des.X -= 20;
-                    //grass move
+                    // Grass move
                     layers[6].des.X -= 20;
                     layers[7].des.X -= 20;
                     layers[8].des.X -= 20;
@@ -316,12 +383,12 @@ namespace game
                     {
                         elevatorplatlist[i].x -= 20;
                     }
+                    for (int i = 0; i < ladderlist.Count; i++)
+                    {
+                        ladderlist[i].x -= 20;
+                    }
                     xlaser -= 20;
-
                     velhoobj.x -= 20;
-
-
-
                 }
             }
             else if (runn_nd_shot)
@@ -336,11 +403,11 @@ namespace game
                     layers[7].des.X = this.ClientSize.Width - 5;
                     layers[8].des.X = 0 - this.ClientSize.Width + 5;
                 }
-                //mountian mov
+                // Mountain move
                 layers[1].des.X -= 20;
                 layers[2].des.X -= 20;
                 layers[3].des.X -= 20;
-                //grass move
+                // Grass move
                 layers[6].des.X -= 20;
                 layers[7].des.X -= 20;
                 layers[8].des.X -= 20;
@@ -366,11 +433,11 @@ namespace game
                     layers[7].des.X = this.ClientSize.Width - 5;
                     layers[8].des.X = 0 - this.ClientSize.Width + 5;
                 }
-                //mountian mov
+                // Mountain move
                 layers[1].des.X += 20;
                 layers[2].des.X += 20;
                 layers[3].des.X += 20;
-                //grass move
+                // Grass move
                 layers[6].des.X += 20;
                 layers[7].des.X += 20;
                 layers[8].des.X += 20;
@@ -382,6 +449,11 @@ namespace game
                 else
                 {
                     playerobj.x -= 20;
+                    if (playershotrev == 0)
+                    {
+                        playerobj.y += 111;
+                        playershotrev++;
+                    }
                 }
             }
             else if (single_shot_fired)
@@ -391,7 +463,6 @@ namespace game
             else if (jump)
             {
                 playerobj.frames = jump_frames;
-
                 if (layers[2].des.X <= 0 || layers[3].des.X >= 0)
                 {
                     layers[1].des.X = 0;
@@ -401,15 +472,14 @@ namespace game
                     layers[7].des.X = this.ClientSize.Width - 5;
                     layers[8].des.X = 0 - this.ClientSize.Width + 5;
                 }
-                //mountian mov
+                // Mountain move
                 layers[1].des.X -= 20;
                 layers[2].des.X -= 20;
                 layers[3].des.X -= 20;
-                //grass move
+                // Grass move
                 layers[6].des.X -= 20;
                 layers[7].des.X -= 20;
                 layers[8].des.X -= 20;
-
                 playerobj.frame_index++;
                 if (playerobj.frame_index >= jump_frames.Count)
                 {
@@ -420,7 +490,6 @@ namespace game
                 {
                     playerobj.x += 50;
                 }
-
                 for (int i = 0; i < platforms.Count; i++)
                 {
                     platforms[i].x -= 20;
@@ -441,6 +510,10 @@ namespace game
                 {
                     elevatorplatlist[i].x -= 20;
                 }
+                for (int i = 0; i < ladderlist.Count; i++)
+                {
+                    ladderlist[i].x -= 20;
+                }
                 xlaser -= 20;
             }
             else
@@ -453,7 +526,7 @@ namespace game
                 }
             }
 
-            if (multi_shot_fired)
+            if (multi_shot_fired && !elevator_locked)
             {
                 if (ct % 2 == 0)
                 {
@@ -462,25 +535,22 @@ namespace game
                     bullet.y = playerobj.y + 140;
                     bullet.width = 20;
                     bullet.height = 20;
-
                     multi_bullets.Add(bullet);
                 }
             }
-            if (multi_shot_fired_rev)
+            if (multi_shot_fired_rev && !elevator_locked)
             {
                 if (ct % 2 == 0)
                 {
                     bullet bullet = new bullet();
-                    bullet.x = (playerobj.x - 160);
-                    bullet.y = playerobj.y + 140;
+                    bullet.x = (playerobj.x - 40);
+                    bullet.y = playerobj.y + 20;
                     bullet.width = 20;
                     bullet.height = 20;
-
                     multi_bullets_rev.Add(bullet);
                 }
             }
-
-            if (single_shot_fired)
+            if (single_shot_fired && !elevator_locked)
             {
                 bullet bullet = new bullet();
                 bullet.x = playerobj.x + 160;
@@ -488,23 +558,17 @@ namespace game
                 bullet.width = 20;
                 bullet.height = 20;
                 single_bullets.Add(bullet);
-
                 single_shot_fired = false;
             }
-            
+
             foreach (bullet i in multi_bullets_rev)
             {
                 i.x -= 80;
             }
-            
-        
-           foreach (bullet i in multi_bullets)
+            foreach (bullet i in multi_bullets)
             {
                 i.x += 80;
-                
             }
-           
-
             for (int i = single_bullets.Count - 1; i >= 0; i--)
             {
                 bullet b = single_bullets[i];
@@ -657,6 +721,46 @@ namespace game
         }
         public void update(object sender, EventArgs e)
         {
+            if(playerobj.x+playerobj.w > elevatorplatlist[0].x && !onlevel2)
+            {
+                down_yougo = true;
+            }
+            this.Text = "" + onlevel2;
+            if(playerobj.x + playerobj.w > 1670 &&playerobj.x+100 < 1710)
+            {
+
+                up_u_go = true;
+            }
+            if (playerobj.x > 1650)
+            {
+                down_yougo = true;
+            }
+           
+            if(playerobj.y > 2000)
+            {
+                dead = true;
+            }
+            if (playerobj.y>330 && playerobj.y<360)
+            {
+               
+
+                if (playerobj.x < 1020)
+                {
+                    down_yougo = true;
+                }
+            }
+            if (down_yougo)
+            {
+                playerobj.y += 50;
+            }
+            if (dead)
+            {
+                playerobj.x += 10000;
+            }
+            if ( playerobj.heath <= 0)
+            {
+                dead = true;
+            }
             actor_related();
             dumbguy_related();
             velhorelated();
@@ -664,7 +768,12 @@ namespace game
             elevator_mov();
             int bi = elevatorthe[0].x + elevatorthe[0].frames[elevatorthe[0].frame_index].Width;
             int bix = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
-          
+            int px = playerobj.x + 105;
+            if (velhoobj.heath <= 0)
+            {
+                velhoobj.x = 110000;
+            }
+
             if (onplatform)
             {
                 laser_range = false;
@@ -680,53 +789,75 @@ namespace game
                     }
                 }
             }
+            float laser_cooldown = ct * 0.016f; 
+            float damagecooldown = 0.1f;
+            int scale = 4;
+            int playerWidth = playerobj.frames[playerobj.frame_index].Width * scale;
+            int playerHeight = playerobj.frames[playerobj.frame_index].Height * scale; 
+            int playerCenterX = playerobj.x + playerWidth / 2; 
+
+            int[] laserRanges = new int[] { 50, 50, 50 };
 
             for (int i = 0; i < laser_beams.Count; i++)
             {
-                int playerLeft = playerobj.x + 105;
-                int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
-                if (laser_range)
+                bullet laser = laser_beams[i];
+                int laserCenterX = laser.x + laser.width / 2;
+                int range = i < laserRanges.Length ? laserRanges[i] : 50;
+
+
+                if (Math.Abs(playerCenterX - laserCenterX) <= range)
                 {
-                    if (playerRight > 1775 + xlaser && playerLeft < 1775 + xlaser || playerRight > 2075 + xlaser && playerLeft < 2075 + xlaser || playerRight > 2375 + xlaser && playerLeft < 2375 + xlaser)
+                    if (laser_cooldown - playerobj.lastLaserDamageTime >= damagecooldown)
                     {
-                        playerobj.heath -= 5;
+                        playerobj.heath -= 20;
+                        playerobj.lastLaserDamageTime = laser_cooldown;
+                     
+                        if (playerobj.heath <= 0)
+                        {
+                            dead = true;
+                            
+                        }
                     }
                 }
             }
 
             if (ct % 5 == 0)
             {
-                bullet pnn = new bullet();
-                pnn.x = platforms[0].x - 85;
-                pnn.y = 0;
-                pnn.width = 10;
-                pnn.height = this.ClientSize.Height;
-                laser_beams.Add(pnn);
-                laser1exist = true;
+                if (platforms.Count >= 3) 
+                {
+                    bullet pnn = new bullet();
+                    pnn.x = platforms[0].x - 85;
+                    pnn.y = 0;
+                    pnn.width = 20; 
+                    pnn.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn);
+                    laser1exist = true;
 
-                bullet pnn2 = new bullet();
-                pnn2.x = platforms[1].x - 85;
-                pnn2.y = 0;
-                pnn2.width = 10;
-                pnn2.height = this.ClientSize.Height;
-                laser_beams.Add(pnn2);
-                laser2exist = true;
+                    bullet pnn2 = new bullet();
+                    pnn2.x = platforms[1].x - 85;
+                    pnn2.y = 0;
+                    pnn2.width = 20;
+                    pnn2.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn2);
+                    laser2exist = true;
 
-                bullet pnn3 = new bullet();
-                pnn3.x = platforms[2].x - 85;
-                pnn3.y = 0;
-                pnn3.width = 10;
-                pnn3.height = this.ClientSize.Height;
-                laser_beams.Add(pnn3);
-                laser3exist = true;
+                    bullet pnn3 = new bullet();
+                    pnn3.x = platforms[2].x - 85;
+                    pnn3.y = 0;
+                    pnn3.width = 20;
+                    pnn3.height = this.ClientSize.Height;
+                    laser_beams.Add(pnn3);
+                    laser3exist = true;
+                }
             }
 
             if (ct % 2 == 0)
             {
                 if (laser_beams.Count >= 3)
                 {
-                    laser_beams.Remove(laser_beams[0]);
-                    laser_beams.Remove(laser_beams[1]);
+                    laser_beams.RemoveAt(0);
+                    laser_beams.RemoveAt(0);
+                    laser_beams.RemoveAt(0); 
                     laser1exist = false;
                     laser2exist = false;
                     laser3exist = false;
@@ -739,9 +870,9 @@ namespace game
                 elevatorthe[0].frame_index = 0;
             }
 
-            if(playerobj.x>1470 && playerobj.y <= 364)
+            if (playerobj.y <= 380)
             {
-                onLevel2 = true;
+                onlevel2 = true;
             }
 
             drawdubb(this.CreateGraphics());
@@ -754,14 +885,14 @@ namespace game
             int playerBottom = playerobj.y + playerobj.h;
             int playerTop = playerobj.y;
 
-            onLevel2 = false; 
+            onlevel2 = false;
 
 
-            
+
 
             if (platforms.Count >= 3)
             {
-                if (playerRight < platforms[0].x - 90 && playerobj.x > groundlist[groundlist.Count - 1].x && !jump)
+                if (playerRight < platforms[0].x - 90 && playerobj.x > groundlist[groundlist.Count - 2].x && !jump)
                 {
                     onplatform = false;
                     laser_range = true;
@@ -788,20 +919,29 @@ namespace game
                 laser_range = false;
             }
 
-            if (!onplatform && !elv_range && !onLevel2)
+            if (!onplatform && !elv_range && !onlevel2)
             {
-                playerobj.y += 12;
+                down_yougo = true;
+                if (ct % 10==0)
+                {
+                    dead = true;
+                }
             }
-            if ((elevatorup || is_paused) && !elv_range && !onplatform && !onLevel2)
+            if ( (elevatorup || is_paused) && !elv_range && !onplatform && !onlevel2)
             {
-                playerobj.y += 12;
+                down_yougo = true;
+                
+                if (ct % 10 == 0)
+                {
+                    dead = true;
+                }
             }
 
             if (playerobj.y > this.ClientSize.Height - 200)
             {
                 playerobj.y = this.ClientSize.Height - 52;
                 onplatform = true;
-                onLevel2 = false;
+                onlevel2 = false;
             }
 
         }
@@ -816,6 +956,7 @@ namespace game
             elvator_fly();
             loadelavtor();
             velho();
+            loadLadder();
 
             // music
 
@@ -1075,46 +1216,60 @@ namespace game
                 xstart += groundWidth;
             }
 
+            one_img ground_obj2 = new one_img();
+            ground_obj2.img = ground;
+            ground_obj2.x = this.ClientSize.Width + 40;
+            ground_obj2.y = groundY;
+      
+            groundlist.Add(ground_obj2);
+      
+
 
         }
 
- 
         public void elevator_mov()
         {
-            
-
-
             int playerLeft = playerobj.x + 105;
             int playerRight = playerobj.x + playerobj.frames[playerobj.frame_index].Width + 105;
 
             bool inRange = playerLeft > elevatorthe[0].x && playerRight < elevatorthe[0].x + elevatorthe[0].frames[elevatorthe[0].frame_index].Width + 120;
             elv_range = inRange;
 
-
             if (is_paused)
             {
                 pause_ct++;
                 if (pause_ct >= durr)
                 {
-                    is_paused = false; 
+                    is_paused = false;
                     pause_ct = 0;
                     if (elevatorthe[0].y <= 590)
                     {
                         elevatorup = false;
                         elevatordown = true;
                     }
-                    else if (elevatorthe[0].y >= this.ClientSize.Height - 80) 
+                    else if (elevatorthe[0].y >= this.ClientSize.Height - 80)
                     {
                         elevatorup = true;
                         elevatordown = false;
                     }
                 }
-                return; 
+                elevator_locked = false;
+                return;
+            }
+
+            if (inRange)
+            {
+                elevator_locked = true; 
+                playerobj.x = elevatorthe[0].x + (elevatorthe[0].frames[elevatorthe[0].frame_index].Width * 3 / 2) - (playerobj.frames[playerobj.frame_index].Width * 4 / 2); // Center player on elevator
+            }
+            else
+            {
+                elevator_locked = false; 
             }
 
             if (elevatorup)
             {
-                elevatorthe[0].y -= 20; 
+                elevatorthe[0].y -= 20;
                 if (inRange)
                 {
                     playerobj.y -= 20; 
@@ -1127,7 +1282,7 @@ namespace game
                     godown = false;
                 }
 
-                if (elevatorthe[0].y <= 590) 
+                if (elevatorthe[0].y <= 590)
                 {
                     elevatorup = false;
                     is_paused = true;
@@ -1139,7 +1294,7 @@ namespace game
                 elevatorthe[0].y += 20;
                 if (inRange)
                 {
-                    playerobj.y += 20;
+                    playerobj.y += 20; 
                     goup = false;
                     godown = true;
                 }
@@ -1149,10 +1304,10 @@ namespace game
                     godown = false;
                 }
 
-                if (elevatorthe[0].y >= this.ClientSize.Height - 80) 
+                if (elevatorthe[0].y >= this.ClientSize.Height - 80)
                 {
                     elevatordown = false;
-                    is_paused = true; 
+                    is_paused = true;
                     pause_ct = 0;
                 }
             }
@@ -1162,14 +1317,14 @@ namespace game
             velho_left_frames_load();
             velho_right_frames_load();
 
-            velhoobj.heath = 10;
-            velhoobj.x = this.ClientSize.Width + 500; 
-            velhoobj.y = 600 - 150; 
+            velhoobj.heath = 40;
+            velhoobj.x = this.ClientSize.Width + 500;
+            velhoobj.y = 600 - 150;
             velhoobj.w = 150;
             velhoobj.h = 150;
             velhoobj.frame_index = 0;
-            velhoobj.frames = velho_going_right; 
-            velho_go_right = true; 
+            velhoobj.frames = velho_going_right;
+            velho_go_right = true;
             velho_go_left = false;
         }
         public void velho_left_frames_load()
@@ -1213,6 +1368,28 @@ namespace game
                 velho_going_right.Add(img);
             }
         }
+        public void loadLadder()
+        {
+            ladderlist.Clear();
+          
+            one_img ladder1 = new one_img();
+            ladder1.img = new Bitmap("octopus-3.png");
+            ladder1.img.MakeTransparent(ladder1.img.GetPixel(0, 0));
+            ladder1.x = this.ClientSize.Width + 1500;
+            ladderlist.Add(ladder1);
+
+            one_img ladder2 = new one_img();
+            ladder2.img = new Bitmap("octopus-3.png");
+            ladder2.img.MakeTransparent(ladder2.img.GetPixel(0, 0));
+            ladder2.x = this.ClientSize.Width + 1530;
+            ladderlist.Add(ladder2);
+          
+            one_img ladder3 = new one_img();
+            ladder3.img = new Bitmap("octopus-3.png");
+            ladder3.img.MakeTransparent(ladder3.img.GetPixel(0, 0));
+            ladder3.x = this.ClientSize.Width + 1560;
+            ladderlist.Add(ladder3);
+        }
         public void player()
         {
             player_idel_frames();
@@ -1243,7 +1420,7 @@ namespace game
                "actor_left_shot/actor_left_shot_2.png",
                "actor_left_shot/actor_left_shot_1.png",
 
-               
+
                   };
 
             for (int j = 0; j < path.Length; j++)
@@ -1331,59 +1508,75 @@ namespace game
                 jump_frames.Add(img);
             }
         }
-
         public void press(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Right)
+            if (!dead)
             {
-                if (!isrunning)
+                
+
+                if (up_u_go && e.KeyCode == Keys.Up)
                 {
-                    isrunning = true;
-                    playerobj.frame_index = 0;
+                    playerobj.y -= 20;
+                    return; 
                 }
-            }
-
-            if (e.KeyCode == Keys.Left)
-            {
-                if (!isrunning)
+               
+                if (!up_u_go)
                 {
-                    isrunning = true;
-                    isRunningBackward = true;
-                    playerobj.frame_index = 0;
+                    if (e.KeyCode == Keys.Right)
+                    {
+                        if (!isrunning)
+                        {
+                            isrunning = true;
+                            playerobj.frame_index = 0;
+                        }
+                    }
+                    if (e.KeyCode == Keys.Left)
+                    {
+                        if (!isrunning)
+                        {
+                            isrunning = true;
+                            isRunningBackward = true;
+                            playerobj.frame_index = 0;
+                        }
+                    }
+                    if (e.KeyCode == Keys.R)
+                    {
+                        multi_shot_fired = !multi_shot_fired;
+                        runn_nd_shot = !runn_nd_shot;
+                        playerobj.frame_index = 0;
+                    }
+                    if (e.KeyCode == Keys.Q)
+                    {
+                        playershotrevdown++;
+                        multi_shot_fired_rev = !multi_shot_fired_rev;
+                        runn_nd_shot_rev = !runn_nd_shot_rev;
+                        if (playershotrevdown == 2)
+                        {
+                            playerobj.y -= 111;
+                            playershotrevdown = 0;
+                            playershotrev = 0;
+                        }
+                        playerobj.frame_index = 0;
+                    }
+                    if (e.KeyCode == Keys.E)
+                    {
+                        if (!singleShotKeyDown)
+                        {
+                            single_shot_fired = true;
+                            playerobj.frame_index = 0;
+                            singleShotKeyDown = true;
+                        }
+                    }
+                    if (e.KeyCode == Keys.Space)
+                    {
+                        if (!jump)
+                        {
+                            jump = true;
+                            playerobj.frame_index = 0;
+                        }
+                    }
                 }
-            }
-
-            if (e.KeyCode == Keys.R)
-            {
-                multi_shot_fired = !multi_shot_fired;
-                runn_nd_shot = !runn_nd_shot;
-                playerobj.frame_index = 0;
-            }
-            if (e.KeyCode == Keys.Q)
-            {
-                multi_shot_fired_rev = !multi_shot_fired_rev;
-                runn_nd_shot_rev = !runn_nd_shot_rev;
-                playerobj.frame_index = 0;
-            }
-
-            if (e.KeyCode == Keys.E)
-            {
-                if (!singleShotKeyDown)
-                {
-                    single_shot_fired = true;
-                    playerobj.frame_index = 0;
-                    singleShotKeyDown = true;
-                }
-            }
-
-            if (e.KeyCode == Keys.Space)
-            {
-                if (!jump)
-                {
-                    jump = true;
-                    playerobj.frame_index = 0;
-
-                }
+                
             }
         }
 
@@ -1406,6 +1599,10 @@ namespace game
             {
                 singleShotKeyDown = false;
             }
+
+
+
+
         }
 
         public void draw(object sender, PaintEventArgs e)
@@ -1445,7 +1642,7 @@ namespace game
             }
 
             // Draw velhoobj
-       
+
             g.DrawImage(velhoobj.frames[velhoobj.frame_index], new Rectangle(velhoobj.x, velhoobj.y, velhoobj.w, velhoobj.h));
 
 
@@ -1514,7 +1711,14 @@ namespace game
                     g.FillEllipse(Brushes.Red, i.x, i.y, i.width, i.height);
                 }
             }
-
+            foreach (one_img ladder in ladderlist)
+            {
+                for (int i = 0; i < 30; i++)
+                {
+                    int h = 50;
+                    g.DrawImage(ladder.img, new Rectangle(ladder.x, this.ClientSize.Height - (h * i), ladder.img.Width * 2, ladder.img.Height * 2));
+                }
+            }
             for (int i = 0; i < elevatorthe.Count; i++)
             {
                 g.DrawImage(elevatorthe[i].frames[elevatorthe[i].frame_index], new Rectangle(elevatorthe[i].x, elevatorthe[i].y, elevatorthe[i].frames[elevatorthe[i].frame_index].Width * 3, elevatorthe[i].frames[elevatorthe[i].frame_index].Height * 3));
@@ -1525,14 +1729,9 @@ namespace game
                 g.FillRectangle(Brushes.Green, 10, 10, playerobj.heath * 4, 20);
                 g.DrawString($"health: {playerobj.heath}", new Font("Fantasy", 12), Brushes.White, 10, 30);
             }
-            g.FillEllipse(Brushes.Red, 100 + 105, 1200, 10, 10);
-            
-            g.FillEllipse(Brushes.Orange, velhoobj.x, 350, 25, 25);
-            g.FillEllipse(Brushes.Orange, velhoobj.x+velhoobj.w, 350, 25, 25);
 
+          
 
-            g.FillEllipse(Brushes.DarkGray, playerobj.x+100, 350, 25, 25);
-            g.FillEllipse(Brushes.DarkGray, playerobj.x + playerobj.w, 350, 25, 25);
 
         }
 
@@ -1542,3 +1741,5 @@ namespace game
         }
     }
 }
+
+
